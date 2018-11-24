@@ -1,15 +1,11 @@
-package com.example.myapplication.contacts;
+package com.example.myapplication.contactdetail;
 
 import com.example.myapplication.BasePresenter;
 import com.example.myapplication.BaseView;
 import com.example.myapplication.data.Contact;
 
-import java.util.List;
-
-public interface ContactListContract {
+public interface ContactDetailContract {
     interface View extends BaseView<Presenter> {
-
-        void showContacts(List<Contact> contacts);
 
         void showContactDetails(Contact contact);
 
@@ -17,9 +13,7 @@ public interface ContactListContract {
 
     interface Presenter extends BasePresenter {
 
-        void loadContacts();
-
-        void openContactDetails(Contact requestedContact);
+        void openContactDetails(final String contactId);
 
     }
 

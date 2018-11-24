@@ -12,15 +12,17 @@ import com.example.myapplication.data.source.ContactsDataSource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 
 public class ContactsLocalDataSource implements ContactsDataSource {
 
     private static ContactsLocalDataSource INSTANCE;
     private Context context;
+    private String[] contactsProjectionFields = {
+            ContactsContract.Contacts._ID,
+            ContactsContract.Contacts.DISPLAY_NAME,
+    };
 
     private ContactsLocalDataSource(Context context) {
         this.context = context.getApplicationContext();
@@ -34,25 +36,23 @@ public class ContactsLocalDataSource implements ContactsDataSource {
         return INSTANCE;
     }
 
-    @Override
-    public void getContacts(ContactsDataSource.LoadContactsCallback callback) {
-        ArrayList<Contact> listContacts = new ArrayList<>();
-        String[] projectionFields = new String[]{
-                ContactsContract.Contacts._ID,
-                ContactsContract.Contacts.DISPLAY_NAME,
-        };
-
-
-        CursorLoader cursorLoader = new CursorLoader(context,
+    private CursorLoader getCursorLoader(String[] projection, String selection,
+                                         String[] selectionArgs) {
+        return new CursorLoader(context,
                 ContactsContract.Contacts.CONTENT_URI,
-                projectionFields,
-                null,
-                null,
+                projection,
+                selection,
+                selectionArgs,
                 null
         );
+    }
 
+    private ArrayList<Contact> loadContactList() {
+        ArrayList<Contact> listContacts = new ArrayList<>();
+        CursorLoader cursorLoader = getCursorLoader(contactsProjectionFields,
+                null,
+                null);
         Cursor cursor = cursorLoader.loadInBackground();
-
         if (cursor != null) {
             final Map<String, Contact> contactsMap = new HashMap<>(cursor.getCount());
             if (cursor.moveToFirst()) {
@@ -73,32 +73,45 @@ public class ContactsLocalDataSource implements ContactsDataSource {
             matchContactNumbers(contactsMap);
             matchContactEmails(contactsMap);
 
-            callback.onContactsLoaded(listContacts);
+            return listContacts;
         } else {
-            callback.onDataNotAvailable();
+            return null;
         }
-
-
     }
 
     @Override
-    public void getContact(final UUID contactId, final GetContactCallback callback) {
-        this.getContacts(new LoadContactsCallback() {
-            @Override
-            public void onContactsLoaded(List<Contact> contacts) {
-                //todo
-            }
+    public void getContacts(ContactsDataSource.LoadContactsCallback callback) {
+        ArrayList<Contact> listContacts = loadContactList();
+        if (listContacts == null) {
+            callback.onDataNotAvailable();
+        } else {
+            callback.onContactsLoaded(listContacts);
+        }
+    }
 
-            @Override
-            public void onDataNotAvailable() {
-                callback.onDataNotAvailable();
-            }
-        });
+    @Override
+    public void getContact(final String requestedContactId, final GetContactCallback callback) {
+        Contact contact = findContactById(loadContactList(), requestedContactId);
+        if (contact == null) {
+            callback.onDataNotAvailable();
+        } else {
+            callback.onContactLoaded(contact);
+        }
+    }
 
+    private Contact findContactById(ArrayList<Contact> contacts, String requestedContactId) {
+        if (requestedContactId != null & contacts != null) {
+            for (Contact contact : contacts) {
+                if (contact.id.equals(requestedContactId)) {
+                    return contact;
+                }
+            }
+        }
+
+        return null;
     }
 
     public void matchContactNumbers(Map<String, Contact> contactsMap) {
-        // Get numbers
         final String[] numberProjection = new String[]{
                 Phone.NUMBER,
                 Phone.TYPE,
@@ -138,7 +151,6 @@ public class ContactsLocalDataSource implements ContactsDataSource {
     }
 
     public void matchContactEmails(Map<String, Contact> contactsMap) {
-        // Get email
         final String[] emailProjection = new String[]{
                 Email.DATA,
                 Email.TYPE,

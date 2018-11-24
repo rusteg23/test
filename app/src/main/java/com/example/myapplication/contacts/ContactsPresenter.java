@@ -44,6 +44,16 @@ public class ContactsPresenter implements ContactListContract.Presenter {
 
     @Override
     public void openContactDetails(Contact requestedContact) {
-        contactsView.showContactDetails(requestedContact.id);
+        contactsRepository.getContact(requestedContact.id, new ContactsDataSource.GetContactCallback() {
+            @Override
+            public void onContactLoaded(Contact contact) {
+                contactsView.showContactDetails(contact);
+            }
+
+            @Override
+            public void onDataNotAvailable() {
+
+            }
+        });
     }
 }

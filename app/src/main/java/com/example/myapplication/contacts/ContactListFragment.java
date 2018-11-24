@@ -1,15 +1,20 @@
 package com.example.myapplication.contacts;
 
+import android.Manifest;
 import android.content.Context;
-import android.net.Uri;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.myapplication.R;
 import com.example.myapplication.data.Contact;
@@ -18,6 +23,7 @@ import java.util.List;
 
 public class ContactListFragment extends Fragment implements ContactListContract.View {
 
+    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 5678;
     private OnContactListFragmentInteractionListener mListener;
     private ContactListContract.Presenter presenter;
     private RecyclerView contactsRV;
@@ -37,8 +43,8 @@ public class ContactListFragment extends Fragment implements ContactListContract
         if (context instanceof OnContactListFragmentInteractionListener) {
             mListener = (OnContactListFragmentInteractionListener) context;
         } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
         }
     }
 
@@ -65,7 +71,44 @@ public class ContactListFragment extends Fragment implements ContactListContract
     @Override
     public void onResume() {
         super.onResume();
-        presenter.start();
+
+        FragmentActivity activity = getActivity();
+        if (activity != null) {
+            int checkSelfPermissionResult = ContextCompat
+                    .checkSelfPermission(activity, Manifest.permission.READ_CONTACTS);
+
+            boolean isContactsReadable =
+                    checkSelfPermissionResult == PackageManager.PERMISSION_GRANTED;
+
+            if (!isContactsReadable) {
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{Manifest.permission.READ_CONTACTS},
+                        MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+
+            } else {
+                presenter.start();
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[],
+                                           int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_CONTACTS:
+                handleRequestPermissionResult(grantResults);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void handleRequestPermissionResult(int[] grantResults) {
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            presenter.start();
+        } else {
+            Toast.makeText(getContext(), "Haven't permission", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -86,9 +129,9 @@ public class ContactListFragment extends Fragment implements ContactListContract
     }
 
     @Override
-    public void showContactDetails(String id) {
+    public void showContactDetails(Contact contact) {
         if (mListener != null) {
-            mListener.onConctactClicked(null);
+            mListener.onContactClicked(contact);
         }
     }
 
@@ -99,7 +142,7 @@ public class ContactListFragment extends Fragment implements ContactListContract
 
     public interface OnContactListFragmentInteractionListener {
 
-        void onConctactClicked(Uri uri);
+        void onContactClicked(Contact contact);
     }
 
     private class ContactHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

@@ -45,7 +45,7 @@ public class ContactsRepository implements ContactsDataSource {
     }
 
     @Override
-    public void getContact(final UUID contactId, final GetContactCallback callback) {
+    public void getContact(final String contactId, final GetContactCallback callback) {
         contactsLocalDataSource.getContact(contactId, new GetContactCallback() {
             @Override
             public void onContactLoaded(Contact contact) {

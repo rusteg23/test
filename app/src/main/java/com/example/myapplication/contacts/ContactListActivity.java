@@ -5,11 +5,16 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.example.myapplication.Injection;
 import com.example.myapplication.R;
+import com.example.myapplication.contactdetail.ContactDetailFragment;
+import com.example.myapplication.contactdetail.ContactDetailPresenter;
+import com.example.myapplication.data.Contact;
 import com.example.myapplication.data.source.ContactsRepository;
 
-public class ContactListActivity extends AppCompatActivity {
+public class ContactListActivity extends AppCompatActivity implements ContactListFragment.OnContactListFragmentInteractionListener {
 
     private ContactsPresenter contactsPresenter;
+    private ContactsRepository contactsRepository;
+    private ContactDetailPresenter contactDetailPresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,9 +36,30 @@ public class ContactListActivity extends AppCompatActivity {
                     .commit();
         }
 
-        ContactsRepository contactsRepository =
+        contactsRepository =
                 Injection.provideContactsRepository(getApplicationContext());
 
         contactsPresenter = new ContactsPresenter(contactsRepository, contactListFragment);
+    }
+
+    @Override
+    public void onContactClicked(Contact contact) {
+        ContactDetailFragment contactDetailFragment = ContactDetailFragment.newInstance(contact.id);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, contactDetailFragment)
+                .addToBackStack(null)
+                .commit();
+
+        contactDetailPresenter =
+                new ContactDetailPresenter(contactsRepository, contactDetailFragment);
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        if(getFragmentManager().getBackStackEntryCount() > 0)
+            getFragmentManager().popBackStack();
+        else
+            super.onBackPressed();
     }
 }
