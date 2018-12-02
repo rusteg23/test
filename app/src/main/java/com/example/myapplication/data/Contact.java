@@ -1,18 +1,19 @@
 package com.example.myapplication.data;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Contact {
-    public String id;
-    public String name;
-    public ArrayList<ContactEmail> emails;
-    public ArrayList<ContactPhone> numbers;
+    public final String id;
+    public final String name;
+    public final List<ContactEmail> emails;
+    public final List<ContactPhone> numbers;
 
     public Contact(String id, String name) {
         this.id = id;
         this.name = name;
-        this.emails = new ArrayList<ContactEmail>();
-        this.numbers = new ArrayList<ContactPhone>();
+        this.emails = new ArrayList<>();
+        this.numbers = new ArrayList<>();
     }
 
     @Override

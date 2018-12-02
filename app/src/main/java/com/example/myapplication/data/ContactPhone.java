@@ -1,8 +1,8 @@
 package com.example.myapplication.data;
 
 public class ContactPhone {
-    public String number;
-    public String type;
+    public final String number;
+    public final String type;
 
     public ContactPhone(String number, String type) {
         this.number = number;

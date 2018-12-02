@@ -1,8 +1,8 @@
 package com.example.myapplication.data;
 
 public class ContactEmail {
-    public String address;
-    public String type;
+    public final String address;
+    public final String type;
 
     public ContactEmail(String address, String type) {
         this.address = address;
