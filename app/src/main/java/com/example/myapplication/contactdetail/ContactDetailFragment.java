@@ -28,7 +28,7 @@ public class ContactDetailFragment extends Fragment implements ContactDetailCont
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
