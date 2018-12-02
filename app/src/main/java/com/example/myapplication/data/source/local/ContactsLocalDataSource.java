@@ -17,6 +17,12 @@ import java.util.Map;
 
 public class ContactsLocalDataSource implements ContactsDataSource {
 
+    private static final String[] NUMBER_PROJECTION = {
+            Phone.NUMBER,
+            Phone.TYPE,
+            Phone.CONTACT_ID,
+    };
+
     private static ContactsLocalDataSource INSTANCE;
     private Context context;
     private String[] contactsProjectionFields = {
@@ -112,15 +118,9 @@ public class ContactsLocalDataSource implements ContactsDataSource {
     }
 
     public void matchContactNumbers(Map<String, Contact> contactsMap) {
-        final String[] numberProjection = new String[]{
-                Phone.NUMBER,
-                Phone.TYPE,
-                Phone.CONTACT_ID,
-        };
-
         Cursor phone = new CursorLoader(context,
                 Phone.CONTENT_URI,
-                numberProjection,
+                NUMBER_PROJECTION,
                 null,
                 null,
                 null).loadInBackground();
