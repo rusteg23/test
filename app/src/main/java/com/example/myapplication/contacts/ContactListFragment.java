@@ -24,7 +24,7 @@ import java.util.List;
 public class ContactListFragment extends Fragment implements ContactListContract.View {
 
     private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 5678;
-    private OnContactListFragmentInteractionListener mListener;
+    private OnContactListFragmentInteractionListener listener;
     private ContactListContract.Presenter presenter;
     private RecyclerView contactsRV;
     private ContactAdapter adapter;
@@ -41,7 +41,7 @@ public class ContactListFragment extends Fragment implements ContactListContract
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnContactListFragmentInteractionListener) {
-            mListener = (OnContactListFragmentInteractionListener) context;
+            listener = (OnContactListFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -114,7 +114,7 @@ public class ContactListFragment extends Fragment implements ContactListContract
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        listener = null;
     }
 
     @Override
@@ -130,8 +130,8 @@ public class ContactListFragment extends Fragment implements ContactListContract
 
     @Override
     public void showContactDetails(Contact contact) {
-        if (mListener != null) {
-            mListener.onContactClicked(contact);
+        if (listener != null) {
+            listener.onContactClicked(contact);
         }
     }
 
