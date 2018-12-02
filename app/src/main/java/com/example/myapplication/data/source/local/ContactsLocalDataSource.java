@@ -17,12 +17,16 @@ import java.util.Map;
 
 public class ContactsLocalDataSource implements ContactsDataSource {
 
+    public static final String[] EMAIL_PROJECTION = {
+            Email.DATA,
+            Email.TYPE,
+            Email.CONTACT_ID,
+    };
     private static final String[] NUMBER_PROJECTION = {
             Phone.NUMBER,
             Phone.TYPE,
             Phone.CONTACT_ID,
     };
-
     private static ContactsLocalDataSource INSTANCE;
     private Context context;
     private String[] contactsProjectionFields = {
@@ -151,15 +155,9 @@ public class ContactsLocalDataSource implements ContactsDataSource {
     }
 
     public void matchContactEmails(Map<String, Contact> contactsMap) {
-        final String[] emailProjection = new String[]{
-                Email.DATA,
-                Email.TYPE,
-                Email.CONTACT_ID,
-        };
-
         Cursor email = new CursorLoader(context,
                 Email.CONTENT_URI,
-                emailProjection,
+                EMAIL_PROJECTION,
                 null,
                 null,
                 null).loadInBackground();
