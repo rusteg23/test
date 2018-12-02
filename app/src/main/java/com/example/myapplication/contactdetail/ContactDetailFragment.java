@@ -49,8 +49,8 @@ public class ContactDetailFragment extends Fragment implements ContactDetailCont
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
 
         presenter.openContactDetails(requiredContactID);
     }
