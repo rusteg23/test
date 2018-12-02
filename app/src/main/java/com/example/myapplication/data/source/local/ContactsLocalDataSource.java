@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.support.annotation.Nullable;
 import android.support.v4.content.CursorLoader;
 
 import com.example.myapplication.data.Contact;
@@ -12,12 +13,13 @@ import com.example.myapplication.data.source.ContactsDataSource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 public class ContactsLocalDataSource implements ContactsDataSource {
 
-    public static final String[] EMAIL_PROJECTION = {
+    private static final String[] EMAIL_PROJECTION = {
             Email.DATA,
             Email.TYPE,
             Email.CONTACT_ID,
@@ -57,14 +59,14 @@ public class ContactsLocalDataSource implements ContactsDataSource {
         );
     }
 
-    private ArrayList<Contact> loadContactList() {
+    private List<Contact> loadContactList() {
         ArrayList<Contact> listContacts = new ArrayList<>();
         CursorLoader cursorLoader = getCursorLoader(contactsProjectionFields,
                 null,
                 null);
         Cursor cursor = cursorLoader.loadInBackground();
         if (cursor != null) {
-            final Map<String, Contact> contactsMap = new HashMap<>(cursor.getCount());
+            Map<String, Contact> contactsMap = new HashMap<>(cursor.getCount());
             if (cursor.moveToFirst()) {
                 int idIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID);
                 int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
@@ -91,7 +93,7 @@ public class ContactsLocalDataSource implements ContactsDataSource {
 
     @Override
     public void getContacts(ContactsDataSource.LoadContactsCallback callback) {
-        ArrayList<Contact> listContacts = loadContactList();
+        List<Contact> listContacts = loadContactList();
         if (listContacts == null) {
             callback.onDataNotAvailable();
         } else {
@@ -100,7 +102,7 @@ public class ContactsLocalDataSource implements ContactsDataSource {
     }
 
     @Override
-    public void getContact(final String requestedContactId, final GetContactCallback callback) {
+    public void getContact(String requestedContactId, GetContactCallback callback) {
         Contact contact = findContactById(loadContactList(), requestedContactId);
         if (contact == null) {
             callback.onDataNotAvailable();
@@ -109,8 +111,9 @@ public class ContactsLocalDataSource implements ContactsDataSource {
         }
     }
 
-    private Contact findContactById(ArrayList<Contact> contacts, String requestedContactId) {
-        if (requestedContactId != null & contacts != null) {
+    @Nullable
+    private Contact findContactById(List<Contact> contacts, String requestedContactId) {
+        if (requestedContactId != null && contacts != null) {
             for (Contact contact : contacts) {
                 if (contact.id.equals(requestedContactId)) {
                     return contact;
@@ -122,66 +125,68 @@ public class ContactsLocalDataSource implements ContactsDataSource {
     }
 
     public void matchContactNumbers(Map<String, Contact> contactsMap) {
-        Cursor phone = new CursorLoader(context,
+        Cursor phoneCursor = new CursorLoader(context,
                 Phone.CONTENT_URI,
                 NUMBER_PROJECTION,
                 null,
                 null,
                 null).loadInBackground();
 
-        if (phone.moveToFirst()) {
-            final int contactNumberColumnIndex = phone.getColumnIndex(Phone.NUMBER);
-            final int contactTypeColumnIndex = phone.getColumnIndex(Phone.TYPE);
-            final int contactIdColumnIndex = phone.getColumnIndex(Phone.CONTACT_ID);
+        if (phoneCursor.moveToFirst()) {
+            int contactNumberColumnIndex = phoneCursor.getColumnIndex(Phone.NUMBER);
+            int contactTypeColumnIndex = phoneCursor.getColumnIndex(Phone.TYPE);
+            int contactIdColumnIndex = phoneCursor.getColumnIndex(Phone.CONTACT_ID);
 
-            while (!phone.isAfterLast()) {
-                final String number = phone.getString(contactNumberColumnIndex);
-                final String contactId = phone.getString(contactIdColumnIndex);
+            while (!phoneCursor.isAfterLast()) {
+                String number = phoneCursor.getString(contactNumberColumnIndex);
+                String contactId = phoneCursor.getString(contactIdColumnIndex);
                 Contact contact = contactsMap.get(contactId);
                 if (contact == null) {
                     continue;
                 }
-                final int type = phone.getInt(contactTypeColumnIndex);
+
+                int type = phoneCursor.getInt(contactTypeColumnIndex);
                 String customLabel = "Custom";
                 CharSequence phoneType = ContactsContract.CommonDataKinds
                         .Phone.getTypeLabel(context.getResources(), type, customLabel);
 
                 contact.addNumber(number, phoneType.toString());
-                phone.moveToNext();
+                phoneCursor.moveToNext();
             }
         }
 
-        phone.close();
+        phoneCursor.close();
     }
 
     public void matchContactEmails(Map<String, Contact> contactsMap) {
-        Cursor email = new CursorLoader(context,
+        Cursor emailCursor = new CursorLoader(context,
                 Email.CONTENT_URI,
                 EMAIL_PROJECTION,
                 null,
                 null,
                 null).loadInBackground();
 
-        if (email.moveToFirst()) {
-            final int contactEmailColumnIndex = email.getColumnIndex(Email.DATA);
-            final int contactTypeColumnIndex = email.getColumnIndex(Email.TYPE);
-            final int contactIdColumnsIndex = email.getColumnIndex(Email.CONTACT_ID);
+        if (emailCursor.moveToFirst()) {
+            int contactEmailColumnIndex = emailCursor.getColumnIndex(Email.DATA);
+            int contactTypeColumnIndex = emailCursor.getColumnIndex(Email.TYPE);
+            int contactIdColumnsIndex = emailCursor.getColumnIndex(Email.CONTACT_ID);
 
-            while (!email.isAfterLast()) {
-                final String address = email.getString(contactEmailColumnIndex);
-                final String contactId = email.getString(contactIdColumnsIndex);
-                final int type = email.getInt(contactTypeColumnIndex);
+            while (!emailCursor.isAfterLast()) {
+                String address = emailCursor.getString(contactEmailColumnIndex);
+                String contactId = emailCursor.getString(contactIdColumnsIndex);
+                int type = emailCursor.getInt(contactTypeColumnIndex);
                 String customLabel = "Custom";
                 Contact contact = contactsMap.get(contactId);
                 if (contact == null) {
                     continue;
                 }
+
                 CharSequence emailType = ContactsContract.CommonDataKinds.Email.getTypeLabel(context.getResources(), type, customLabel);
                 contact.addEmail(address, emailType.toString());
-                email.moveToNext();
+                emailCursor.moveToNext();
             }
         }
 
-        email.close();
+        emailCursor.close();
     }
 }
