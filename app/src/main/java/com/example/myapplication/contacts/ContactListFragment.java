@@ -56,7 +56,7 @@ public class ContactListFragment extends Fragment implements ContactListContract
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
         contactsRV = (RecyclerView) view.findViewById(R.id.contacts_recycler_view);
         contactsRV.setLayoutManager(linearLayoutManager);
     }
@@ -65,28 +65,23 @@ public class ContactListFragment extends Fragment implements ContactListContract
     public void onResume() {
         super.onResume();
 
-        FragmentActivity activity = getActivity();
-        if (activity != null) {
-            int checkSelfPermissionResult = ContextCompat
-                    .checkSelfPermission(activity, Manifest.permission.READ_CONTACTS);
+        FragmentActivity activity = requireActivity();
+        int checkSelfPermissionResult = ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.READ_CONTACTS);
 
-            boolean isContactsReadable =
-                    checkSelfPermissionResult == PackageManager.PERMISSION_GRANTED;
-
-            if (!isContactsReadable) {
-                ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{Manifest.permission.READ_CONTACTS},
-                        MY_PERMISSIONS_REQUEST_READ_CONTACTS);
-
-            } else {
-                presenter.start();
-            }
+        boolean isContactsReadable = checkSelfPermissionResult == PackageManager.PERMISSION_GRANTED;
+        if (!isContactsReadable) {
+            String[] permissions = {Manifest.permission.READ_CONTACTS};
+            ActivityCompat.requestPermissions(activity, permissions,
+                    MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+        } else {
+            presenter.start();
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[],
-                                           int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[],
+                                           @NonNull int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_READ_CONTACTS:
                 handleRequestPermissionResult(grantResults);
