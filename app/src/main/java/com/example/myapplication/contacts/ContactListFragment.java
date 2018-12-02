@@ -133,31 +133,7 @@ public class ContactListFragment extends Fragment implements ContactListContract
         void onContactClicked(Contact contact);
     }
 
-    private class ContactHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-        private TextView firstNameTextView;
-        private Contact contact;
-
-        public ContactHolder(View itemView) {
-            super(itemView);
-
-            itemView.setOnClickListener(this);
-            firstNameTextView = (TextView) itemView.findViewById(R.id.list_item_contact_first_name);
-        }
-
-        public void bindContact(Contact contact) {
-            this.contact = contact;
-            firstNameTextView.setText(contact.name);
-
-        }
-
-        @Override
-        public void onClick(View v) {
-            presenter.openContactDetails(contact);
-        }
-    }
-
-    private class ContactAdapter extends RecyclerView.Adapter<ContactHolder> {
+    private class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactHolder> {
 
         private List<Contact> contacts;
 
@@ -165,15 +141,16 @@ public class ContactListFragment extends Fragment implements ContactListContract
             this.contacts = contacts;
         }
 
+        @NonNull
         @Override
-        public ContactHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public ContactHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
             View view = layoutInflater.inflate(R.layout.list_item_contact, parent, false);
             return new ContactHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(ContactHolder holder, int position) {
+        public void onBindViewHolder(@NonNull ContactHolder holder, int position) {
             Contact contact = contacts.get(position);
             holder.bindContact(contact);
         }
@@ -185,6 +162,31 @@ public class ContactListFragment extends Fragment implements ContactListContract
 
         public void setContacts(List<Contact> contacts) {
             this.contacts = contacts;
+        }
+
+        public class ContactHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+            private TextView firstNameTextView;
+            private Contact contact;
+
+            public ContactHolder(View itemView) {
+                super(itemView);
+
+                itemView.setOnClickListener(this);
+                firstNameTextView =
+                        (TextView) itemView.findViewById(R.id.list_item_contact_first_name);
+            }
+
+            public void bindContact(Contact contact) {
+                this.contact = contact;
+                firstNameTextView.setText(contact.name);
+
+            }
+
+            @Override
+            public void onClick(View v) {
+                presenter.openContactDetails(contact);
+            }
         }
     }
 }
