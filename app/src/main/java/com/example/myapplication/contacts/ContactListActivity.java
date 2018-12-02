@@ -55,11 +55,11 @@ public class ContactListActivity extends AppCompatActivity implements ContactLis
     }
 
     @Override
-    public void onBackPressed()
-    {
-        if(getFragmentManager().getBackStackEntryCount() > 0)
+    public void onBackPressed() {
+        if (getFragmentManager().getBackStackEntryCount() > 0) {
             getFragmentManager().popBackStack();
-        else
+        } else {
             super.onBackPressed();
+        }
     }
 }
