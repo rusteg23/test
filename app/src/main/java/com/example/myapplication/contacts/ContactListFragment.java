@@ -173,8 +173,7 @@ public class ContactListFragment extends Fragment implements ContactListContract
                 super(itemView);
 
                 itemView.setOnClickListener(this);
-                firstNameTextView =
-                        (TextView) itemView.findViewById(R.id.list_item_contact_first_name);
+                firstNameTextView = itemView.findViewById(R.id.list_item_contact_first_name);
             }
 
             public void bindContact(Contact contact) {
