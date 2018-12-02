@@ -29,10 +29,6 @@ public class ContactListFragment extends Fragment implements ContactListContract
     private RecyclerView contactsRV;
     private ContactAdapter adapter;
 
-    public ContactListFragment() {
-        // Required empty public constructor
-    }
-
     public static ContactListFragment newInstance() {
         return new ContactListFragment();
     }
@@ -46,11 +42,6 @@ public class ContactListFragment extends Fragment implements ContactListContract
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
     }
 
     @Override
