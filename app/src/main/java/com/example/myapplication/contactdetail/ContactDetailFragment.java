@@ -17,10 +17,6 @@ public class ContactDetailFragment extends Fragment implements ContactDetailCont
     private TextView contactDetailInfoView;
     private ContactDetailContract.Presenter presenter;
 
-    public ContactDetailFragment() {
-        // Required empty public constructor
-    }
-
     public static ContactDetailFragment newInstance(String requiredContactID) {
         ContactDetailFragment fragment = new ContactDetailFragment();
         Bundle args = new Bundle();
