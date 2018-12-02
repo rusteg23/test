@@ -95,14 +95,14 @@ public class ContactListFragment extends Fragment implements ContactListContract
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             presenter.start();
         } else {
-            Toast.makeText(getContext(), "Haven't permission", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.error_access_denied, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onDetach() {
-        super.onDetach();
         listener = null;
+        super.onDetach();
     }
 
     @Override
