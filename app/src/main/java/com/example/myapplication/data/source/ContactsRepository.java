@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class ContactsRepository implements ContactsDataSource {
 
-    private static ContactsRepository INSTANCE = null;
+    private static ContactsRepository INSTANCE;
     private final ContactsDataSource contactsLocalDataSource;
     Map<UUID, Contact> cachedContacts;
 
