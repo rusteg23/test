@@ -26,7 +26,7 @@ public class ContactDetailPresenter implements ContactDetailContract.Presenter {
     }
 
     @Override
-    public void openContactDetails(final String requestedContactId) {
+    public void openContactDetails(String requestedContactId) {
         contactsRepository.getContact(requestedContactId, new ContactsDataSource.GetContactCallback() {
             @Override
             public void onContactLoaded(Contact contact) {

@@ -13,7 +13,7 @@ public interface ContactDetailContract {
 
     interface Presenter extends BasePresenter {
 
-        void openContactDetails(final String contactId);
+        void openContactDetails(String contactId);
 
     }
 
