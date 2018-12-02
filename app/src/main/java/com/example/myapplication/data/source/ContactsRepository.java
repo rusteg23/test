@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class ContactsRepository implements ContactsDataSource {
 
-    private static ContactsRepository INSTANCE;
+    private static ContactsRepository instance;
     private final ContactsDataSource contactsLocalDataSource;
     Map<UUID, Contact> cachedContacts;
 
@@ -18,15 +18,15 @@ public class ContactsRepository implements ContactsDataSource {
         this.contactsLocalDataSource = contactsLocalDataSource;
     }
 
-    public static ContactsRepository getInstance(ContactsDataSource contactsLocalDataSource) {
-        if (INSTANCE == null) {
-            INSTANCE = new ContactsRepository(contactsLocalDataSource);
+    public static synchronized ContactsRepository getInstance(ContactsDataSource contactsLocalDataSource) {
+        if (instance == null) {
+            instance = new ContactsRepository(contactsLocalDataSource);
         }
-        return INSTANCE;
+        return instance;
     }
 
     public static void destroyInstance() {
-        INSTANCE = null;
+        instance = null;
     }
 
     @Override
