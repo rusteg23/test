@@ -30,11 +30,12 @@ public class ContactsRepository implements ContactsDataSource {
     }
 
     @Override
-    public void getContacts(final LoadContactsCallback callback) {
+    public void getContacts(LoadContactsCallback callback) {
+        final LoadContactsCallback callback1 = callback;
         contactsLocalDataSource.getContacts(new LoadContactsCallback() {
             @Override
             public void onContactsLoaded(List<Contact> contacts) {
-                callback.onContactsLoaded(contacts);
+                callback1.onContactsLoaded(contacts);
             }
 
             @Override

@@ -1,5 +1,6 @@
 package com.example.myapplication.data.source.local;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.ContactsContract;
@@ -15,6 +16,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import rx.Observable;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 
 public class ContactsLocalDataSource implements ContactsDataSource {
@@ -59,6 +66,45 @@ public class ContactsLocalDataSource implements ContactsDataSource {
         );
     }
 
+    private Cursor getCursor(String[] projection, String selection, String[] selectionArgs) {
+        ContentResolver contentResolver = context.getContentResolver();
+        return contentResolver.query(ContactsContract.Contacts.CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null);
+    }
+
+    public List<Contact> loadContactListV2(Cursor cursor) {
+        List<Contact> listContacts = new ArrayList<>();
+
+        if (cursor != null) {
+            Map<String, Contact> contactsMap = new HashMap<>(cursor.getCount());
+            if (cursor.moveToFirst()) {
+                int idIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID);
+                int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+
+                do {
+                    String contactId = cursor.getString(idIndex);
+                    String contactDisplayName = cursor.getString(nameIndex);
+                    Contact contact = new Contact(contactId, contactDisplayName);
+                    contactsMap.put(contactId, contact);
+                    listContacts.add(contact);
+                } while (cursor.moveToNext());
+            }
+
+            cursor.close();
+
+            matchContactNumbers(contactsMap);
+            matchContactEmails(contactsMap);
+
+            return listContacts;
+        } else {
+            return null;
+        }
+    }
+
+    @Deprecated
     private List<Contact> loadContactList() {
         ArrayList<Contact> listContacts = new ArrayList<>();
         CursorLoader cursorLoader = getCursorLoader(contactsProjectionFields,
@@ -93,22 +139,80 @@ public class ContactsLocalDataSource implements ContactsDataSource {
 
     @Override
     public void getContacts(ContactsDataSource.LoadContactsCallback callback) {
-        List<Contact> listContacts = loadContactList();
-        if (listContacts == null) {
-            callback.onDataNotAvailable();
-        } else {
-            callback.onContactsLoaded(listContacts);
-        }
+        final ContactsDataSource.LoadContactsCallback callback1 = callback;
+        Cursor cursor = getCursor(contactsProjectionFields,
+                null,
+                null);
+
+        Observer<List<Contact>> observer = new Observer<List<Contact>>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                callback1.onDataNotAvailable();
+            }
+
+            @Override
+            public void onNext(List<Contact> contacts) {
+                callback1.onContactsLoaded(contacts);
+            }
+        };
+
+        Observable.just(cursor)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(new Func1<Cursor, List<Contact>>() {
+                    @Override
+                    public List<Contact> call(Cursor cursor) {
+                        return loadContactListV2(cursor);
+                    }
+                })
+                .subscribe(observer);
     }
 
     @Override
     public void getContact(String requestedContactId, GetContactCallback callback) {
-        Contact contact = findContactById(loadContactList(), requestedContactId);
-        if (contact == null) {
-            callback.onDataNotAvailable();
-        } else {
-            callback.onContactLoaded(contact);
-        }
+        final GetContactCallback callback1 = callback;
+        final String requestedContactId1 = requestedContactId;
+
+        Cursor cursor = getCursor(contactsProjectionFields,
+                null,
+                null);
+
+        Observer<Contact> observer = new Observer<Contact>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                callback1.onDataNotAvailable();
+            }
+
+            @Override
+            public void onNext(Contact contact) {
+                if (contact == null) {
+                    callback1.onDataNotAvailable();
+                } else {
+                    callback1.onContactLoaded(contact);
+                }
+            }
+        };
+
+        Observable.just(cursor)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(new Func1<Cursor, Contact>() {
+                    @Override
+                    public Contact call(Cursor cursor) {
+                        return findContactById(loadContactListV2(cursor), requestedContactId1);
+                    }
+                })
+                .subscribe(observer);
     }
 
     @Nullable
