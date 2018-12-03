@@ -23,7 +23,9 @@ public class ContactListActivity extends AppCompatActivity implements ContactLis
 
         setContentView(R.layout.activity_contact);
 
-        addContactListFragment();
+        if (savedInstanceState == null) {
+            addContactListFragment();
+        }
     }
 
     private void addContactListFragment() {
